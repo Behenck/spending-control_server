@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider  = "prisma-erd-generator"
+  output    = "../ERD.svg"
+  ERD_DEBUG = true
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(cuid())
+  name        String
+  email       String        @unique
+  googleId    String?       @unique
+  avatarUrl   String?
+  createdAt   DateTime      @default(now())
+  Transaction Transaction[]
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  price           Int
+  type            String
+  repeat          Boolean? @default(false)
+  repeatRecurrent String?
+  repeatFixed     Boolean? @default(false)
+  nRepeat         Int?
+  dueDate         DateTime
+  paid            Boolean? @default(false)
+  bankName        String?
+  createdAt       DateTime @default(now())
+  userId          String
+  categoryId      String?
+
+  user     User      @relation(fields: [userId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+
+  Transaction Transaction[]
+}
